@@ -12,7 +12,7 @@ router.get('/posts', async (_, res) => {
 
     res.status(200).json({ posts });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 });
 // posts 전체 조회 끝
@@ -29,7 +29,7 @@ router.get('/posts/:postId', async (req, res) => {
     }
     res.status(200).json({ data: { result } });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 });
 // 상세조회 끝
@@ -56,7 +56,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
     });
     res.status(200).json({ data: { result } });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 });
 // 생성 끝
@@ -66,18 +66,23 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
   const { postId } = req.params;
   const { userId } = res.locals.user;
 
+  // 커스텀 찾기 함수 최하단참조
   const post = findPost(postId);
   if (post.userId !== userId) {
     res.status(400).json({ errorMessage: '글을 삭제할 권한이 없습니다.' });
     return;
   }
 
-  // 해당 post 삭제
-  const postDeleteResult = await Post.deleteOne({ _id: postId });
+  try {
+    // 해당 post 삭제
+    const postDeleteResult = await Post.deleteOne({ _id: postId });
 
-  // 해당 Post와 연결된 댓글들 삭제
-  const commentDeleteResult = await Comment.deleteMany({ postId: postId });
-  res.status(200).json({ data: { postDeleteResult, commentDeleteResult } });
+    // 해당 Post와 연결된 댓글들 삭제
+    const commentDeleteResult = await Comment.deleteMany({ postId: postId });
+    res.status(200).json({ data: { postDeleteResult, commentDeleteResult } });
+  } catch (error) {
+    res.status(500).json({ errorMessage: error });
+  }
 });
 // 삭제 끝
 
@@ -102,12 +107,16 @@ router.put('/posts/:postId', authMiddleware, async (req, res) => {
     return;
   }
 
-  // update
-  const result = await Post.updateOne(
-    { _id: postId },
-    { $set: { content, title } },
-  );
-  res.status(200).json({ data: { result } });
+  try {
+    // update
+    const result = await Post.updateOne(
+      { _id: postId },
+      { $set: { content, title } },
+    );
+    res.status(200).json({ data: { result } });
+  } catch (error) {
+    res.status(500).json({ errorMessage: error });
+  }
 });
 // 수정 끝
 
@@ -116,7 +125,7 @@ const findPost = async ({ postId, res }) => {
   try {
     return await Post.findOne({ _id: postId });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 };
 

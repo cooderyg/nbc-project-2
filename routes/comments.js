@@ -37,7 +37,7 @@ router.post('/comments/:postId', authMiddleware, async (req, res) => {
     });
     res.status(200).json({ data: { result } });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 });
 // 생성 끝
@@ -86,7 +86,7 @@ router.put('/comments/:commentId', authMiddleware, async (req, res) => {
     );
     res.status(200).json({ data: { result } });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 });
 // 수정 끝
@@ -96,7 +96,7 @@ const findComment = async ({ commentId, res }) => {
   try {
     return await Comment.findOne({ _id: commentId });
   } catch (error) {
-    res.status(400).json({ errorMessage: error });
+    res.status(500).json({ errorMessage: error });
   }
 };
 
